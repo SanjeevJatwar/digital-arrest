@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self';">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Digital Arrest HUD</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #05080f;
+      --panel: rgba(10, 15, 25, 0.78);
+      --panel-border: rgba(255, 255, 255, 0.12);
+      --text: #eef2f8;
+      --muted: rgba(238, 242, 248, 0.7);
+      --accent: #ff5c4d;
+      --good: #7de2c4;
+      --warn: #ffca6a;
+      --shadow: 0 24px 70px rgba(0, 0, 0, 0.42);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 20% 10%, rgba(255, 92, 77, 0.16), transparent 26%),
+        radial-gradient(circle at 85% 15%, rgba(125, 226, 196, 0.12), transparent 24%),
+        radial-gradient(circle at 50% 85%, rgba(255, 202, 106, 0.11), transparent 24%),
+        linear-gradient(180deg, rgba(5, 8, 15, 0.88), rgba(5, 8, 15, 0.96));
+      color: var(--text);
+      font-family: "Bahnschrift", "Segoe UI Variable Display", "Segoe UI", sans-serif;
+    }
+
+    body {
+      -webkit-font-smoothing: antialiased;
+      text-rendering: geometricPrecision;
+    }
+
+    .frame {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      padding: 24px;
+    }
+
+    .orbs::before,
+    .orbs::after {
+      content: '';
+      position: absolute;
+      inset: auto;
+      border-radius: 999px;
+      filter: blur(12px);
+      pointer-events: none;
+    }
+
+    .orbs::before {
+      top: 14px;
+      right: 14px;
+      width: 260px;
+      height: 260px;
+      background: radial-gradient(circle, rgba(255, 92, 77, 0.14), transparent 68%);
+    }
+
+    .orbs::after {
+      left: 0;
+      bottom: 0;
+      width: 340px;
+      height: 340px;
+      background: radial-gradient(circle, rgba(125, 226, 196, 0.1), transparent 70%);
+    }
+
+    .hud {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      display: grid;
+      grid-template-rows: auto auto 1fr;
+      gap: 18px;
+    }
+
+    .topbar,
+    .meta,
+    .grid > section {
+      background: var(--panel);
+      border: 1px solid var(--panel-border);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      padding: 20px 24px;
+      border-radius: 24px;
+    }
+
+    .eyebrow {
+      margin: 0 0 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.24em;
+      font-size: 11px;
+      color: var(--accent);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 32px;
+      line-height: 1.05;
+      letter-spacing: -0.04em;
+    }
+
+    .subhead {
+      margin: 10px 0 0;
+      max-width: 780px;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .status-stack {
+      display: grid;
+      gap: 10px;
+      justify-items: end;
+      text-align: right;
+    }
+
+    .pill {
+      min-width: 150px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #f8fbff;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+    }
+
+    .pill.ok {
+      color: var(--good);
+      border-color: rgba(125, 226, 196, 0.28);
+      background: rgba(125, 226, 196, 0.08);
+    }
+
+    .pill.warn {
+      color: var(--warn);
+      border-color: rgba(255, 202, 106, 0.28);
+      background: rgba(255, 202, 106, 0.08);
+    }
+
+    .meta {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      border-radius: 20px;
+      padding: 14px;
+    }
+
+    .metric {
+      padding: 14px 16px;
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .metric label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 11px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .metric strong {
+      font-size: 18px;
+      letter-spacing: -0.02em;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1.3fr 0.9fr 1fr 0.8fr;
+      gap: 18px;
+      min-height: 0;
+    }
+
+    .grid > section {
+      border-radius: 24px;
+      padding: 18px;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .panel-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+
+    .panel-head h2 {
+      margin: 0;
+      font-size: 14px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .badge {
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(255, 92, 77, 0.12);
+      border: 1px solid rgba(255, 92, 77, 0.26);
+      color: #ffb7ae;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .badge.active {
+      animation: pulse 1s ease-in-out infinite;
+      background: rgba(255, 92, 77, 0.22);
+      box-shadow: 0 0 0 1px rgba(255, 92, 77, 0.34), 0 0 36px rgba(255, 92, 77, 0.28);
+    }
+
+    .transcript-list {
+      display: grid;
+      gap: 10px;
+      overflow: auto;
+      padding-right: 6px;
+      min-height: 0;
+    }
+
+    .transcript-line {
+      display: grid;
+      grid-template-columns: auto auto 1fr;
+      gap: 10px;
+      align-items: start;
+      padding: 12px 14px;
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .transcript-line.system {
+      border-color: rgba(125, 226, 196, 0.15);
+    }
+
+    .transcript-line.mic {
+      border-color: rgba(255, 202, 106, 0.15);
+    }
+
+    .ts {
+      font-size: 11px;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    .speaker {
+      font-size: 11px;
+      font-weight: 700;
+      color: #d7dfe8;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .text {
+      color: var(--text);
+      line-height: 1.5;
+      font-size: 14px;
+      overflow-wrap: anywhere;
+    }
+
+    .stack {
+      display: grid;
+      gap: 14px;
+      min-height: 0;
+    }
+
+    .emotion-card,
+    .insight-card,
+    .alert-card {
+      padding: 16px;
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .emotion-card h3,
+    .insight-card h3,
+    .alert-card h3 {
+      margin: 0 0 10px;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: var(--muted);
+    }
+
+    .stat-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 10px;
+      font-size: 14px;
+      color: #dfe5ef;
+    }
+
+    .bar {
+      position: relative;
+      margin-top: 12px;
+      width: 100%;
+      height: 10px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.06);
+      overflow: hidden;
+    }
+
+    .bar span {
+      display: block;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--accent), #ff946d);
+      box-shadow: 0 0 18px rgba(255, 92, 77, 0.35);
+      width: 0;
+      transition: width 160ms ease;
+    }
+
+    .bar.face span {
+      background: linear-gradient(90deg, #7de2c4, #66c7ff);
+      box-shadow: 0 0 18px rgba(125, 226, 196, 0.25);
+    }
+
+    .insight-text {
+      min-height: 200px;
+      line-height: 1.7;
+      font-size: 15px;
+      color: #edf1f7;
+      white-space: pre-wrap;
+    }
+
+    .alert-card {
+      display: grid;
+      gap: 12px;
+      background: linear-gradient(180deg, rgba(255, 92, 77, 0.12), rgba(255, 255, 255, 0.03));
+      border-color: rgba(255, 92, 77, 0.18);
+    }
+
+    .score {
+      font-size: 64px;
+      line-height: 0.95;
+      font-weight: 700;
+      letter-spacing: -0.08em;
+    }
+
+    .signals {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    @keyframes pulse {
+      0%,
+      100% {
+        transform: scale(1);
+      }
+      50% {
+        transform: scale(1.03);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="frame orbs">
+    <main class="hud">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Digital Arrest</p>
+          <h1>Live Zoom intelligence overlay</h1>
+          <p class="subhead">
+            Streaming transcript, voice stress, facial emotion, and context-fused insight layers for the current call.
+          </p>
+        </div>
+        <div class="status-stack">
+          <div id="bridgeStatus" class="pill warn">Bridge offline</div>
+          <div id="backendStatus" class="pill">Backend idle</div>
+          <div id="pointerStatus" class="pill ok">Click-through</div>
+          <div id="captureStatus" class="pill warn">Synthetic capture</div>
+          <div id="mediaStatus" class="pill warn">Browser media locked</div>
+        </div>
+      </header>
+
+      <section class="meta">
+        <div class="metric">
+          <label>Capture</label>
+          <strong>Audio + webcam</strong>
+          <button id="captureToggle" type="button" style="margin-top: 10px; padding: 10px 12px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.06); color: var(--text); font: inherit; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer;">
+            Enable real capture
+          </button>
+        </div>
+        <div class="metric">
+          <label>Browser media</label>
+          <strong>Mic + webcam prompt</strong>
+          <button id="mediaPermissionButton" type="button" style="margin-top: 10px; padding: 10px 12px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.06); color: var(--text); font: inherit; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer;">
+            Request permission
+          </button>
+        </div>
+        <div class="metric">
+          <label>Analysis window</label>
+          <strong>30 transcript lines</strong>
+        </div>
+        <div class="metric">
+          <label>Alert threshold</label>
+          <strong>Score 65+</strong>
+        </div>
+      </section>
+      <section class="grid">
+        <section>
+          <div class="panel-head">
+            <h2>Transcript</h2>
+            <span class="pill ok">Live</span>
+          </div>
+          <div id="transcriptList" class="transcript-list"></div>
+        </section>
+
+        <section>
+          <div class="panel-head">
+            <h2>Emotion</h2>
+            <span class="pill">Voice + Face</span>
+          </div>
+          <div class="stack">
+            <div class="emotion-card">
+              <h3>Voice</h3>
+              <div class="stat-row"><span>Emotion</span><strong id="voiceEmotion">neutral</strong></div>
+              <div class="stat-row"><span>Stress</span><strong id="voiceStress">18</strong></div>
+              <div class="stat-row"><span>Pace</span><strong id="voicePace">steady</strong></div>
+              <div class="stat-row"><span>Energy</span><strong id="voiceEnergy">35%</strong></div>
+              <div class="bar"><span id="voiceBar"></span></div>
+            </div>
+            <div class="emotion-card">
+              <h3>Face</h3>
+              <div class="stat-row"><span>Emotion</span><strong id="faceEmotion">neutral</strong></div>
+              <div class="stat-row"><span>Gaze</span><strong id="faceGaze">center</strong></div>
+              <div class="stat-row"><span>Blink rate</span><strong id="faceBlink">12 bpm</strong></div>
+              <div class="bar face"><span id="faceBar"></span></div>
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <div class="panel-head">
+            <h2>LLM Insight</h2>
+            <span class="pill">Streaming</span>
+          </div>
+          <div class="insight-card">
+            <div id="insightText" class="insight-text"></div>
+          </div>
+        </section>
+
+        <section>
+          <div class="panel-head">
+            <h2>Arrest</h2>
+            <span id="arrestBadge" class="badge">Watch</span>
+          </div>
+          <div class="alert-card">
+            <div class="score" id="arrestScore">0</div>
+            <div class="stat-row"><span>Verdict</span><strong id="arrestVerdict">monitoring</strong></div>
+            <div class="stat-row"><span>Confidence</span><strong id="arrestConfidence">low</strong></div>
+            <div id="arrestSignals" class="signals">No high-risk signals yet</div>
+          </div>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <script src="renderer.js"></script>
+</body>
+</html>
