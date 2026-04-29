@@ -178,7 +178,7 @@ function handleEvent(payload) {
       renderInsightPanel();
       break;
     case 'llm_token':
-      state.insight = `${state.insight}${state.insight ? ' ' : ''}${payload.token || ''}`.trim();
+      state.insight = `${state.insight} ${payload.token || ''}`.trim();
       renderInsightPanel();
       break;
     case 'llm_insight':

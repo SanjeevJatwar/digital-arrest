@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from typing import Any
 
+from llm.context_builder import ContextBuilder
+
 try:
     from llama_cpp import Llama
 except Exception:  # pragma: no cover - optional dependency
@@ -12,6 +14,7 @@ class PhiInsightService:
     def __init__(self, config) -> None:
         self.config = config
         self.model_name = config.llm_model_path or 'Phi-3-mini-4k-instruct-q4.gguf'
+        self.context_builder = ContextBuilder(config.llm_context_lines)
         self.model: Any = None
         self.backend = 'synthetic'
 
@@ -37,6 +40,44 @@ class PhiInsightService:
         }
 
     def generate(self, context) -> dict:
+        if self.backend == 'llama-cpp' and self.model is not None:
+            prompt = self.context_builder.format_prompt(context)
+            output = self.model(
+                prompt,
+                max_tokens=256,
+                temperature=self.config.llm_temperature,
+                stop=['</s>']
+            )
+
+            insight = output['choices'][0]['text'].strip() or 'Unable to generate a confident insight.'
+            insight_lower = insight.lower()
+
+            if any(term in insight_lower for term in ('urgent', 'threat', 'fraud', 'panic', 'high risk')):
+                signals = ['llm high-risk language']
+                verdict = 'high stress detected'
+                arrest_score = max(70, context.stress_score)
+            elif any(term in insight_lower for term in ('concern', 'uncertain', 'pressure', 'moderate')):
+                signals = ['llm moderate-risk language']
+                verdict = 'elevated stress detected'
+                arrest_score = max(45, context.stress_score)
+            else:
+                signals = ['llm stable language']
+                verdict = 'stable call state'
+                arrest_score = max(0, context.stress_score - 5)
+
+            return {
+                'type': 'llm_result',
+                'insight': insight,
+                'tokens': insight.split(),
+                'backend': self.backend,
+                'verdict': {
+                    'arrest_score': min(100, arrest_score),
+                    'verdict': verdict,
+                    'signals': signals,
+                    'confidence': 'medium' if arrest_score >= 50 else 'low'
+                }
+            }
+
         transcript_count = len(context.transcript_lines)
         voice_line = context.voice_emotion
         face_line = context.dominant_face_emotion

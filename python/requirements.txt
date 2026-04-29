@@ -5,6 +5,5 @@ soundcard
 opencv-python
 
 # Core runtime (keep only if you want reproducible install guidance)
-fastapi
-uvicornfastapi>=0.110
+fastapi>=0.110
 uvicorn[standard]>=0.29

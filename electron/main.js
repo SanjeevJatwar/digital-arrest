@@ -11,6 +11,7 @@ let shuttingDown = false;
 let clickThrough = true;
 let realCaptureEnabled = process.env.DIGITAL_ARREST_ENABLE_REAL_CAPTURE === '1';
 let mediaPermissionState = 'unrequested';
+const bridgePort = process.env.DIGITAL_ARREST_PORT || '8765';
 
 function sendToRenderer(channel, payload) {
   if (mainWindow && !mainWindow.isDestroyed()) {
@@ -104,7 +105,7 @@ function connectBridge() {
     return;
   }
 
-  bridgeSocket = new WebSocket('ws://127.0.0.1:8765/ws');
+  bridgeSocket = new WebSocket(`ws://127.0.0.1:${bridgePort}/ws`);
 
   bridgeSocket.on('open', () => {
     sendToRenderer('app:status', {
@@ -222,7 +223,6 @@ app.whenReady().then(() => {
   broadcastCaptureState();
   broadcastMediaPermissionState(mediaPermissionState);
   startBackend();
-  connectBridge();
 });
 
 app.on('before-quit', () => {

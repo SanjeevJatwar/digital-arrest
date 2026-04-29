@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import datetime, timezone
+from typing import Optional
 
 
 SYSTEM_HINTS = [
@@ -30,6 +31,7 @@ class AudioChunk:
     duration_seconds: float
     energy: float
     timestamp: str
+    samples: Optional[list[float]] = None
 
 
 def make_audio_chunk(index: int, source: str) -> AudioChunk:

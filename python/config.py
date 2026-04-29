@@ -28,4 +28,4 @@ class BackendConfig:
     llm_context_lines: int = int(os.getenv('DIGITAL_ARREST_CONTEXT_LINES', '10'))
     llm_temperature: float = float(os.getenv('DIGITAL_ARREST_LLM_TEMPERATURE', '0.3'))
     arrest_threshold: int = int(os.getenv('DIGITAL_ARREST_ARREST_THRESHOLD', '65'))
-    frame_rate: int = int(os.getenv('DIGITAL_ARREST_FRAME_RATE', '5'))
+    frame_rate: int = int(os.getenv('DIGITAL_ARREST_FRAME_RATE', '2'))

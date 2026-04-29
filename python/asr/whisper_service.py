@@ -3,6 +3,11 @@ from __future__ import annotations
 from typing import Any
 
 try:
+    import numpy as np
+except Exception:  # pragma: no cover - optional dependency
+    np = None
+
+try:
     from faster_whisper import WhisperModel
 except Exception:  # pragma: no cover - optional dependency
     WhisperModel = None
@@ -37,6 +42,30 @@ class WhisperService:
         }
 
     def transcribe(self, chunk) -> dict:
+        if self.backend == 'faster-whisper' and self.model is not None and np is not None:
+            # Use captured samples when available; otherwise derive a tiny placeholder waveform.
+            samples = getattr(chunk, 'samples', None)
+            if samples:
+                audio_array = np.array(samples, dtype='float32')
+            else:
+                sample_count = max(1600, int(chunk.duration_seconds * 16000))
+                audio_array = np.full(sample_count, float(chunk.energy) * 0.01, dtype='float32')
+
+            try:
+                segments, _ = self.model.transcribe(audio_array, beam_size=5)
+                text = ' '.join(seg.text for seg in segments).strip() or chunk.transcript_hint
+            except Exception:
+                text = chunk.transcript_hint
+
+            return {
+                'type': 'transcript_line',
+                'timestamp': chunk.timestamp,
+                'source': chunk.source,
+                'speaker': chunk.speaker,
+                'text': text,
+                'backend': self.backend
+            }
+
         return {
             'type': 'transcript_line',
             'timestamp': chunk.timestamp,

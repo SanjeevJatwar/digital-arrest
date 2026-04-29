@@ -5,6 +5,7 @@ import json
 import threading
 import time
 from collections import deque
+from concurrent.futures import TimeoutError
 from typing import Any
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
@@ -83,7 +84,10 @@ class ProcessOrchestrator:
             return None
 
         future = asyncio.run_coroutine_threadsafe(queue.get(), self.loop)
-        return future.result()
+        try:
+            return future.result(timeout=10)
+        except TimeoutError:
+            return None
 
     def _audio_worker(self) -> None:
         index = 0
@@ -99,7 +103,7 @@ class ProcessOrchestrator:
             self._push_queue(self.voice_queue, mic_chunk)
 
             index += 1
-            time.sleep(self.config.frame_rate if hasattr(self.config, 'frame_rate') else 2.0)
+            time.sleep(self.config.frame_rate)
 
     def _stt_worker(self) -> None:
         while self.running:
@@ -142,7 +146,7 @@ class ProcessOrchestrator:
             self.face_state = face_state
             self._emit(face_state)
             index += 1
-            time.sleep(0.2)
+            time.sleep(1.0)
 
     def _context_worker(self) -> None:
         while self.running:

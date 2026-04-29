@@ -45,7 +45,8 @@ def get_mic_chunk(index: int, duration: float = 2.0, samplerate: int = 16000) ->
             transcript_hint='',
             duration_seconds=duration,
             energy=energy,
-            timestamp=_now_ts()
+            timestamp=_now_ts(),
+            samples=data.flatten().astype('float32').tolist()
         )
     except Exception:
         return make_audio_chunk(index, 'mic')
@@ -64,8 +65,7 @@ def get_system_chunk(index: int, duration: float = 2.0, samplerate: int = 16000)
         arr = data
         if arr is None:
             return make_audio_chunk(index, 'system')
-        import numpy as _np
-        rms = float(_np.sqrt((_np.array(arr, dtype='float64') ** 2).mean()))
+        rms = float(np.sqrt((np.array(arr, dtype='float64') ** 2).mean()))
         energy = min(0.99, round(rms * 3.5, 2))
 
         return AudioChunk(
@@ -75,7 +75,8 @@ def get_system_chunk(index: int, duration: float = 2.0, samplerate: int = 16000)
             transcript_hint='',
             duration_seconds=duration,
             energy=energy,
-            timestamp=_now_ts()
+            timestamp=_now_ts(),
+            samples=np.array(arr, dtype='float32').reshape(-1).tolist()
         )
     except Exception:
         return make_audio_chunk(index, 'system')
