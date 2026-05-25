@@ -1,0 +1,55 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Environment variables / secrets
+.env
+*.env
+
+# IDE
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs and temp files
+*.log
+*.tmp
+*.temp
+
+# Audio/video temporary files
+*.wav
+*.mp3
+*.mp4
+*.mkv
+*.avi
+
+# Model/cache files
+.cache/
+models/
+*.bin
+*.pt
+*.onnx
+
+# HuggingFace / Whisper cache
+huggingface/
+whisper_cache/
+
+# Build outputs
+dist/
+build/
+*.spec
+
+# Sensitive evidence
+evidence/
+recordings/
+private_data/

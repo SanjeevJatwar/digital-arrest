@@ -1,0 +1,15 @@
+fastapi
+uvicorn
+requests
+PyQt6
+python-dotenv
+pydantic
+sounddevice
+numpy
+scipy
+faster-whisper
+python-multipart
+soundcard
+opencv-python
+mediapipe
+google-genai
