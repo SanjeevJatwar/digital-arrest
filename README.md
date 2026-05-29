@@ -3,7 +3,6 @@
 Praesidium is an advanced real-time monitoring and threat detection system designed to protect users from "Digital Arrest" and other sophisticated financial scams. It combines real-time audio analysis, visual stress detection, and large language model (LLM) reasoning to provide immediate guidance to potential victims.
 
 ## Key Features
-
 - **Real-time Call Monitoring**: Automatically detects communication windows (Zoom, WhatsApp, Google Meet) and begins monitoring if suspicious activity is detected.
 - **Dual-Stream Audio Analysis**: Transcribes both the user (victim) and the caller (potential scammer) to analyze conversation patterns.
 - **Multimodal Risk Engine**: Fuses speech analysis (pressure tactics, scam keywords) with visual cues (facial stress, attention levels) to calculate an overall threat score.
@@ -13,7 +12,7 @@ Praesidium is an advanced real-time monitoring and threat detection system desig
 ## Project Structure
 
 - `backend/`: FastAPI server handling heavy-duty AI processing.
-  - `main.py`: Entry point for the FastAPI server and route definitions.
+  - `main.py`: Entry point for the FastAPI server and routes.
   - `services/`: Specialized modules for analysis.
     - `scam_reasoning_engine.py`: Evaluates conversation logic for scam indicators.
     - `multimodal_risk_engine.py`: Analytical bridge between audio and video data.
@@ -27,8 +26,6 @@ Praesidium is an advanced real-time monitoring and threat detection system desig
   - `video/`: Logic for camera-based visual analytics.
     - `webcam_monitor.py`: Real-time face and expression tracking.
     - `expression_analyzer.py`: Analyzes facial landmarks for stress signals.
-- `requirements.txt`: Python package dependencies.
-- `.gitignore`: Rules for ignoring unnecessary files in the repository.
 
 ## Tech Stack
 
@@ -40,7 +37,7 @@ Praesidium is an advanced real-time monitoring and threat detection system desig
 
 ### Prerequisites
 - Python 3.9+
-- Audio devices configured for loopback (to capture system audio).
+- Audio devices configured for loopback.
 
 ### Installation
 1. Clone the repository:
@@ -65,4 +62,4 @@ Praesidium is an advanced real-time monitoring and threat detection system desig
    ```
 
 ## Disclaimer
-This software is designed as a support tool to help users recognize potential scams. It should not be the sole basis for making financial or legal decisions. Always verify identities through official government channels.
+This software is designed as a support tool to help users recognize potential scams. It should not be the sole basis for making financial or legal decisions.
