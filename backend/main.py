@@ -1,5 +1,13 @@
 import os
 import tempfile
+import sys
+from pathlib import Path
+
+# Add the project root to sys.path to allow absolute imports
+root_path = Path(__file__).parent.parent
+if str(root_path) not in sys.path:
+    sys.path.append(str(root_path))
+
 from backend.services.scam_reasoning_engine import generate_scam_reasoning
 from fastapi import FastAPI, UploadFile, File, Form
 from pydantic import BaseModel
@@ -153,3 +161,8 @@ def get_recommended_action(risk_level: str) -> str:
         )
 
     return "No major scam pattern detected yet. Continue monitoring."
+
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)
