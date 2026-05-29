@@ -8,23 +8,33 @@ __pycache__/
 .venv/
 venv/
 env/
+virtualenv/
 
 # Environment variables / secrets
 .env
 *.env
+.flaskenv
 
 # IDE
 .vscode/
 .idea/
+*.swp
+*.swo
+.project
+.pydevproject
+.settings/
 
 # OS files
 .DS_Store
 Thumbs.db
+desktop.ini
 
 # Logs and temp files
 *.log
 *.tmp
 *.temp
+logs/
+tmp/
 
 # Audio/video temporary files
 *.wav
@@ -32,6 +42,8 @@ Thumbs.db
 *.mp4
 *.mkv
 *.avi
+*.flac
+*.m4a
 
 # Model/cache files
 .cache/
@@ -39,6 +51,8 @@ models/
 *.bin
 *.pt
 *.onnx
+*.weights
+*.h5
 
 # HuggingFace / Whisper cache
 huggingface/
@@ -48,8 +62,24 @@ whisper_cache/
 dist/
 build/
 *.spec
+target/
 
 # Sensitive evidence
 evidence/
 recordings/
 private_data/
+screenshots/
+output/
+
+# Packages
+pip-log.txt
+pip-delete-this-directory.txt
+.tox/
+.coverage
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/
+
